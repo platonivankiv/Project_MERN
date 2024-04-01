@@ -106,7 +106,7 @@ export const update = async (req, res) => {
 			{
 				title: req.body.title,
 				text: req.body.text,
-				tags: req.body.tags.split(','),
+				tags: req.body.tags.split(',').map(tag => tag.trim()),
 				imageUrl: req.body.imageUrl,
 				user: req.userId,
 			}
@@ -136,6 +136,21 @@ export const getLastTags = async (req, res) => {
 		console.log(err)
 		res.status(500).json({
 			message: 'Не удалось получить теги',
+		})
+	}
+}
+
+export const getPostsByTag = async (req, res) => {
+	try {
+		const tagName = req.params.tagName
+		const posts = await PostModel.find({ tags: tagName })
+			.populate('user')
+			.exec()
+		res.json(posts)
+	} catch (err) {
+		console.log(err)
+		res.status(500).json({
+			message: 'Не удалось получить посты с указанным тегом',
 		})
 	}
 }
