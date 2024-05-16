@@ -2,13 +2,19 @@ import cors from 'cors'
 import express from 'express'
 import mongoose from 'mongoose'
 import multer from 'multer'
-import { PostController, UserController } from './controllers/index.js'
+import {
+	CommentController,
+	PostController,
+	UserController,
+} from './controllers/index.js'
+
 import { getPostsByTag } from './controllers/PostController.js'
 import { checkAuth, handleValidationErrors } from './utils/index.js'
 import {
 	loginValidation,
 	postCreateValidation,
 	registerValidation,
+	commentCreateValidation
 } from './validation.js'
 
 mongoose
@@ -41,12 +47,14 @@ app.post(
 	handleValidationErrors,
 	UserController.register
 )
+
 app.post(
 	'/auth/login',
 	loginValidation,
 	handleValidationErrors,
 	UserController.login
 )
+
 app.get('/auth/me', checkAuth, UserController.getMe)
 
 app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
@@ -60,6 +68,11 @@ app.get('/posts/tags/:tagName', getPostsByTag)
 app.get('/posts', PostController.getAll)
 app.get('/posts/tags', PostController.getLastTags)
 app.get('/posts/:id', PostController.getOne)
+app.get('/posts/:id/comments', CommentController.getAll)
+app.post('/posts/:id/comments', checkAuth, handleValidationErrors,  CommentController.create)
+app.delete('/comments/:id', checkAuth, CommentController.remove)
+app.patch('/comments/:id', checkAuth, handleValidationErrors, commentCreateValidation, CommentController.update)
+
 app.post(
 	'/posts',
 	checkAuth,
@@ -67,7 +80,9 @@ app.post(
 	handleValidationErrors,
 	PostController.create
 )
+
 app.delete('/posts/:id', checkAuth, PostController.remove)
+
 app.patch(
 	'/posts/:id',
 	checkAuth,
